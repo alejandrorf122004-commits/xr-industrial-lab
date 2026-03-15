@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modelo CAD en A-Frame</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene>
+    <a-sky color="#EAF2F8"></a-sky>
+    <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#DDE5D8"></a-plane>
+
+    <a-entity
+  gltf-model="url(models/modelo.glb)"
+  position="0 -10 -10"
+  rotation="0 0 0"
+  scale="0.01 0.01 0.01">
+</a-entity>
+
+    <a-light type="ambient" intensity="1"></a-light>
+    <a-light type="directional" position="2 4 2" intensity="1"></a-light>
+
+    <a-camera position="0 1.6 4"></a-camera>
+  </a-scene>
+</body>
+</html>
