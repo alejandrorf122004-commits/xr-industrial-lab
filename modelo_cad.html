@@ -3,58 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modelo CAD en Meta Quest MR</title>
+  <title>Modelo CAD MR Quest</title>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 </head>
-<body>
+<body style="margin:0; overflow:hidden;">
   <a-scene
-    xr-mode-ui="XRMode: xr"
-    webxr="requiredFeatures: local-floor; optionalFeatures: bounded-floor,hand-tracking;"
-    renderer="colorManagement: true; alpha: true"
+    renderer="alpha: true; colorManagement: true"
     background="color: transparent"
+    xr-mode-ui="enabled: false"
+    webxr="requiredFeatures: local-floor; optionalFeatures: hit-test;"
   >
-    <!-- NO pongas sky si quieres ver passthrough -->
-    <!-- NO pongas plane al inicio mientras pruebas -->
-
-    <a-entity
-      gltf-model="url(modelo.glb)"
-      position="0 1.2 -2"
-      rotation="0 0 0"
-      scale="0.01 0.01 0.01">
+    <a-entity id="rig">
+      <a-camera position="0 1.6 0"></a-camera>
     </a-entity>
 
-    <a-light type="ambient" intensity="1.2"></a-light>
-    <a-light type="directional" position="2 4 2" intensity="1"></a-light>
+    <a-entity
+      id="modelo"
+      gltf-model="url(modelo.glb)"
+      position="0 1.2 -1.5"
+      rotation="0 0 0"
+      scale="0.2 0.2 0.2"
+      visible="true">
+    </a-entity>
 
-    <a-camera position="0 1.6 0"></a-camera>
+    <a-light type="ambient" intensity="1.5"></a-light>
+    <a-light type="directional" position="2 4 2" intensity="1"></a-light>
   </a-scene>
 
   <script>
     const scene = document.querySelector('a-scene');
 
-    async function entrarAR() {
-      if (!navigator.xr) {
-        alert("Este navegador no soporta WebXR.");
-        return;
+    async function entrarMR() {
+      try {
+        if (!navigator.xr) {
+          alert("WebXR no está disponible.");
+          return;
+        }
+
+        const ok = await navigator.xr.isSessionSupported('immersive-ar');
+        if (!ok) {
+          alert("Este navegador no soporta immersive-ar.");
+          return;
+        }
+
+        const session = await navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['local-floor'],
+          optionalFeatures: ['hit-test']
+        });
+
+        scene.renderer.xr.setReferenceSpaceType('local-floor');
+        await scene.renderer.xr.setSession(session);
+
+      } catch (e) {
+        console.error(e);
+        alert("Error entrando a MR: " + e.message);
       }
-
-      const soportaAR = await navigator.xr.isSessionSupported('immersive-ar');
-      if (!soportaAR) {
-        alert("Este dispositivo/navegador no soporta immersive-ar.");
-        return;
-      }
-
-      const session = await navigator.xr.requestSession('immersive-ar', {
-        requiredFeatures: ['local-floor'],
-        optionalFeatures: ['bounded-floor', 'hand-tracking']
-      });
-
-      scene.renderer.xr.setReferenceSpaceType('local-floor');
-      await scene.renderer.xr.setSession(session);
     }
 
-    // Opcional: entrar automáticamente al tocar la pantalla
-    document.body.addEventListener('click', entrarAR, { once: true });
+    document.body.addEventListener('click', entrarMR, { once: true });
   </script>
 </body>
 </html>
