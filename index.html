@@ -1,18 +1,60 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-<script 
-src="https://cdn.jsdelivr.net/npm/aframe@1.4.1/dist/aframe-master.min.js"></script> 
-</head> 
-<body> 
-<a-scene stats> 
-<a-box position="0 1 -3" rotation="0 45 0" color="#4CC3D9"></a-box> 
-<a-sphere position="2 1 -4" radius="1" color="#EF2D5E"></a-sphere> 
-<a-cylinder position="-2 1 -4" radius="0.5" height="1.5" 
-color="#FFC65D"></a-cylinder> 
-<a-plane rotation="-90 0 0" width="10" height="10" 
-color="#7BC8A4"></a-plane> 
-<a-sky color="#ECECEC"></a-sky> 
-</a-scene> 
-</body> 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelo CAD en Meta Quest MR</title>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene
+    xr-mode-ui="XRMode: xr"
+    webxr="requiredFeatures: local-floor; optionalFeatures: bounded-floor,hand-tracking;"
+    renderer="colorManagement: true; alpha: true"
+    background="color: transparent"
+  >
+    <!-- NO pongas sky si quieres ver passthrough -->
+    <!-- NO pongas plane al inicio mientras pruebas -->
+
+    <a-entity
+      gltf-model="url(modelo.glb)"
+      position="0 1.2 -2"
+      rotation="0 0 0"
+      scale="0.01 0.01 0.01">
+    </a-entity>
+
+    <a-light type="ambient" intensity="1.2"></a-light>
+    <a-light type="directional" position="2 4 2" intensity="1"></a-light>
+
+    <a-camera position="0 1.6 0"></a-camera>
+  </a-scene>
+
+  <script>
+    const scene = document.querySelector('a-scene');
+
+    async function entrarAR() {
+      if (!navigator.xr) {
+        alert("Este navegador no soporta WebXR.");
+        return;
+      }
+
+      const soportaAR = await navigator.xr.isSessionSupported('immersive-ar');
+      if (!soportaAR) {
+        alert("Este dispositivo/navegador no soporta immersive-ar.");
+        return;
+      }
+
+      const session = await navigator.xr.requestSession('immersive-ar', {
+        requiredFeatures: ['local-floor'],
+        optionalFeatures: ['bounded-floor', 'hand-tracking']
+      });
+
+      scene.renderer.xr.setReferenceSpaceType('local-floor');
+      await scene.renderer.xr.setSession(session);
+    }
+
+    // Opcional: entrar automáticamente al tocar la pantalla
+    document.body.addEventListener('click', entrarAR, { once: true });
+  </script>
+</body>
 </html>
