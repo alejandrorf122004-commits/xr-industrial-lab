@@ -1,66 +1,28 @@
-<!DOCTYPE html>
+
+  <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modelo CAD MR Quest</title>
-  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modelo CAD en A-Frame</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 </head>
-<body style="margin:0; overflow:hidden;">
-  <a-scene
-    renderer="alpha: true; colorManagement: true"
-    background="color: transparent"
-    xr-mode-ui="enabled: false"
-    webxr="requiredFeatures: local-floor; optionalFeatures: hit-test;"
-  >
-    <a-entity id="rig">
-      <a-camera position="0 1.6 0"></a-camera>
-    </a-entity>
+<body>
+  <a-scene>
+    <a-sky color="#EAF2F8"></a-sky>
+    <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#DDE5D8"></a-plane>
 
     <a-entity
-      id="modelo"
-      gltf-model="url(modelo.glb)"
-      position="0 -10 -10"
-      rotation="0 0 0"
-      scale="0.2 0.2 0.2"
-      visible="true">
-    </a-entity>
+  gltf-model="url(modelo.glb)"
+  position="0 -10 -10"
+  rotation="0 0 0"
+  scale="0.01 0.01 0.01">
+</a-entity>
 
-    <a-light type="ambient" intensity="1.5"></a-light>
+    <a-light type="ambient" intensity="1"></a-light>
     <a-light type="directional" position="2 4 2" intensity="1"></a-light>
+
+    <a-camera position="0 1.6 4"></a-camera>
   </a-scene>
-
-  <script>
-    const scene = document.querySelector('a-scene');
-
-    async function entrarMR() {
-      try {
-        if (!navigator.xr) {
-          alert("WebXR no está disponible.");
-          return;
-        }
-
-        const ok = await navigator.xr.isSessionSupported('immersive-ar');
-        if (!ok) {
-          alert("Este navegador no soporta immersive-ar.");
-          return;
-        }
-
-        const session = await navigator.xr.requestSession('immersive-ar', {
-          requiredFeatures: ['local-floor'],
-          optionalFeatures: ['hit-test']
-        });
-
-        scene.renderer.xr.setReferenceSpaceType('local-floor');
-        await scene.renderer.xr.setSession(session);
-
-      } catch (e) {
-        console.error(e);
-        alert("Error entrando a MR: " + e.message);
-      }
-    }
-
-    document.body.addEventListener('click', entrarMR, { once: true });
-  </script>
 </body>
-</html>
+</html> tengo este código pero en las metaquest no me deja ver en realidad virtual ya que solo veo el entorno del cad no veo lo de la vida real 
