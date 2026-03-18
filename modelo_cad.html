@@ -8,6 +8,7 @@
   <style>
     body { margin: 0; background: transparent; }
     canvas { background: transparent !important; }
+
     #overlay {
       position: fixed;
       bottom: 20px;
@@ -15,23 +16,96 @@
       text-align: center;
       z-index: 999;
     }
-    #overlay button {
-      padding: 12px 24px;
-      font-size: 18px;
-      background: #0066ff;
+
+    #controles {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    button {
+      padding: 14px 20px;
+      font-size: 20px;
+      background: rgba(0,0,0,0.7);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      min-width: 60px;
+    }
+
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: monospace;
+    }
+
+    #escala-controles {
+      position: fixed;
+      bottom: 80px;
+      left: 10px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #rotacion-controles {
+      position: fixed;
+      bottom: 80px;
+      right: 10px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Overlay para el botón de entrar en AR -->
+  <!-- Botón entrar AR -->
   <div id="overlay">
     <button onclick="enterAR()">📷 Entrar en AR</button>
   </div>
+
+  <!-- Posición -->
+  <div id="controles">
+    <button onclick="mover('y', 0.5)">⬆️ Subir</button>
+    <button onclick="mover('y', -0.5)">⬇️ Bajar</button>
+    <button onclick="mover('z', 0.5)">🔼 Acercar</button>
+    <button onclick="mover('z', -0.5)">🔽 Alejar</button>
+    <button onclick="mover('x', -0.5)">◀️ Izq</button>
+    <button onclick="mover('x', 0.5)">▶️ Der</button>
+    <button onclick="resetTodo()">🔄 Reset</button>
+  </div>
+
+  <!-- Escala -->
+  <div id="escala-controles">
+    <button onclick="escalar(0.002)">🔍 Mayor</button>
+    <button onclick="escalar(-0.002)">🔎 Menor</button>
+  </div>
+
+  <!-- Rotación -->
+  <div id="rotacion-controles">
+    <button onclick="rotar('y', 15)">↩️ Rot Y+</button>
+    <button onclick="rotar('y', -15)">↪️ Rot Y-</button>
+    <button onclick="rotar('x', 15)">🔃 Rot X+</button>
+    <button onclick="rotar('x', -15)">🔃 Rot X-</button>
+  </div>
+
+  <!-- Info en pantalla -->
+  <div id="info">pos: 0.0, 0.0, -2.0 | esc: 0.010 | rot: 0, 0, 0</div>
 
   <a-scene
     webxr="requiredFeatures: local-floor;
@@ -41,35 +115,59 @@
     background="transparent: true"
     embedded>
 
-    <!-- Sin a-sky ni a-plane — la cámara real es el fondo -->
-
-    <!-- Tu modelo CAD -->
     <a-entity
       id="modelo"
       gltf-model="url(modelo.glb)"
-      position="0 -10 -2"
+      position="0 0 -2"
       rotation="0 0 0"
       scale="0.01 0.01 0.01">
     </a-entity>
 
     <a-light type="ambient" intensity="1.5"></a-light>
     <a-light type="directional" position="2 4 2" intensity="1"></a-light>
-
     <a-camera position="0 1.6 0"></a-camera>
 
   </a-scene>
 
   <script>
+    let pos = { x: 0, y: 0, z: -2 };
+    let esc = 0.01;
+    let rot = { x: 0, y: 0, z: 0 };
+
     function enterAR() {
-      const scene = document.querySelector('a-scene');
-      scene.enterAR();
+      document.querySelector('a-scene').enterAR();
     }
 
-    // Ajustar posición del modelo al entrar en AR
-    document.querySelector('a-scene').addEventListener('enter-vr', () => {
+    function mover(eje, delta) {
+      pos[eje] += delta;
+      aplicar();
+    }
+
+    function escalar(delta) {
+      esc = Math.max(0.001, esc + delta);
+      aplicar();
+    }
+
+    function rotar(eje, delta) {
+      rot[eje] = (rot[eje] + delta) % 360;
+      aplicar();
+    }
+
+    function resetTodo() {
+      pos = { x: 0, y: 0, z: -2 };
+      esc = 0.01;
+      rot = { x: 0, y: 0, z: 0 };
+      aplicar();
+    }
+
+    function aplicar() {
       const modelo = document.querySelector('#modelo');
-      modelo.setAttribute('position', '0 -1.6 -2'); // frente a ti a 2 metros
-    });
+      modelo.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+      modelo.setAttribute('scale', `${esc} ${esc} ${esc}`);
+      modelo.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
+      document.getElementById('info').textContent =
+        `pos: ${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)} | esc: ${esc.toFixed(3)} | rot: ${rot.x}, ${rot.y}, ${rot.z}`;
+    }
   </script>
 
 </body>
