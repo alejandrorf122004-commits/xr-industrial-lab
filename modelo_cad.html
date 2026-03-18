@@ -1,85 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modelo CAD en MR - A-Frame</title>
-
-  <!-- Basado en la documentación actual de A-Frame 1.7.0 -->
-  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modelo CAD en AR</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-
-    #mensaje {
+    body { margin: 0; background: transparent; }
+    canvas { background: transparent !important; }
+    #overlay {
       position: fixed;
-      left: 16px;
-      bottom: 16px;
-      z-index: 10;
-      background: rgba(0,0,0,0.65);
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      z-index: 999;
+    }
+    #overlay button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #0066ff;
       color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="mensaje">
-    Entra en AR y toca una mesa o el piso para colocar el modelo.
+
+  <!-- Overlay para el botón de entrar en AR -->
+  <div id="overlay">
+    <button onclick="enterAR()">📷 Entrar en AR</button>
   </div>
 
   <a-scene
-    renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true"
-    xr-mode-ui="XRMode: ar; enterVREnabled: false"
-    webxr="referenceSpaceType: local; optionalFeatures: hit-test, plane-detection"
-    ar-hit-test="target:#contenedorModelo">
+    webxr="requiredFeatures: local-floor;
+           optionalFeatures: dom-overlay,bounded-floor,hand-tracking;
+           overlayElement: #overlay"
+    renderer="colorManagement: true; alpha: true"
+    background="transparent: true"
+    embedded>
 
-    <a-assets>
-      <a-asset-item id="modelo3d" src="modelo.glb"></a-asset-item>
-    </a-assets>
+    <!-- Sin a-sky ni a-plane — la cámara real es el fondo -->
 
-    <!-- Luces para que el modelo sí se vea -->
-    <a-light type="ambient" intensity="1"></a-light>
+    <!-- Tu modelo CAD -->
+    <a-entity
+      id="modelo"
+      gltf-model="url(modelo.glb)"
+      position="0 0 -2"
+      rotation="0 0 0"
+      scale="0.01 0.01 0.01">
+    </a-entity>
+
+    <a-light type="ambient" intensity="1.5"></a-light>
     <a-light type="directional" position="2 4 2" intensity="1"></a-light>
 
-    <!-- Este contenedor se coloca sobre la superficie real al tocar -->
-    <a-entity id="contenedorModelo" visible="false">
-      <a-entity
-        id="modelo"
-        gltf-model="#modelo3d"
-        position="0 0 0"
-        rotation="0 0 0"
-        scale="0.01 0.01 0.01">
-      </a-entity>
-    </a-entity>
+    <a-camera position="0 1.6 0"></a-camera>
+
   </a-scene>
 
   <script>
-    const scene = document.querySelector('a-scene');
+    function enterAR() {
+      const scene = document.querySelector('a-scene');
+      scene.enterAR();
+    }
 
-    scene.addEventListener('renderstart', () => {
-      // Fondo transparente para que se vea el passthrough en MR
-      scene.renderer.setClearColor(0x000000, 0);
-    });
-
-    scene.addEventListener('enter-vr', () => {
-      const msg = document.getElementById('mensaje');
-      if (scene.is('ar-mode')) {
-        msg.textContent = 'Apunta a una superficie real y toca para ubicar el modelo.';
-      }
-    });
-
-    scene.addEventListener('ar-hit-test-select', () => {
-      const msg = document.getElementById('mensaje');
-      msg.textContent = 'Modelo colocado. Muévete alrededor para verlo en tu entorno real.';
+    // Ajustar posición del modelo al entrar en AR
+    document.querySelector('a-scene').addEventListener('enter-vr', () => {
+      const modelo = document.querySelector('#modelo');
+      modelo.setAttribute('position', '0 0 -2'); // frente a ti a 2 metros
     });
   </script>
+
 </body>
 </html>
