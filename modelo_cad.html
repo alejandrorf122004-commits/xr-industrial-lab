@@ -1,27 +1,85 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modelo CAD en A-Frame</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelo CAD en MR - A-Frame</title>
+
+  <!-- Basado en la documentación actual de A-Frame 1.7.0 -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    #mensaje {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 10;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-  <a-scene>
-    <a-sky color="#EAF2F8"></a-sky>
-    <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#DDE5D8"></a-plane>
+  <div id="mensaje">
+    Entra en AR y toca una mesa o el piso para colocar el modelo.
+  </div>
 
-    <a-entity
-  gltf-model="url(modelo.glb)"
-  position="-1 -10 3"
-  rotation="0 0 0"
-  scale="0.01 0.01 0.01">
-</a-entity>
+  <a-scene
+    renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true"
+    xr-mode-ui="XRMode: ar; enterVREnabled: false"
+    webxr="referenceSpaceType: local; optionalFeatures: hit-test, plane-detection"
+    ar-hit-test="target:#contenedorModelo">
 
+    <a-assets>
+      <a-asset-item id="modelo3d" src="modelo.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Luces para que el modelo sí se vea -->
     <a-light type="ambient" intensity="1"></a-light>
     <a-light type="directional" position="2 4 2" intensity="1"></a-light>
 
-    <a-camera position="0 1.6 4"></a-camera>
+    <!-- Este contenedor se coloca sobre la superficie real al tocar -->
+    <a-entity id="contenedorModelo" visible="false">
+      <a-entity
+        id="modelo"
+        gltf-model="#modelo3d"
+        position="-1 -10 3"
+        rotation="0 0 0"
+        scale="0.01 0.01 0.01">
+      </a-entity>
+    </a-entity>
   </a-scene>
+
+  <script>
+    const scene = document.querySelector('a-scene');
+
+    scene.addEventListener('renderstart', () => {
+      // Fondo transparente para que se vea el passthrough en MR
+      scene.renderer.setClearColor(0x000000, 0);
+    });
+
+    scene.addEventListener('enter-vr', () => {
+      const msg = document.getElementById('mensaje');
+      if (scene.is('ar-mode')) {
+        msg.textContent = 'Apunta a una superficie real y toca para ubicar el modelo.';
+      }
+    });
+
+    scene.addEventListener('ar-hit-test-select', () => {
+      const msg = document.getElementById('mensaje');
+      msg.textContent = 'Modelo colocado. Muévete alrededor para verlo en tu entorno real.';
+    });
+  </script>
 </body>
 </html>
